@@ -24,7 +24,7 @@ theta2 = random.uniform(0.0, 360.) # degrees
 # Convert theta1 and theta2 to radians
 theta1_rad = np.deg2rad(theta1)
 theta2_rad = np.deg2rad(theta2)
-
+print ('theta1:',theta1,' Phase difference:',theta2-theta1, ' deg')
 # Sensor positions
 sensor1_distance = 0.308 # m
 sensor2_distance = sensor1_distance + 0.19 # m
@@ -55,21 +55,16 @@ amplitude2 = (cylinder_mass * net_unbalance_force) / (cylinder_mass * sensor2_di
 # Generate sinusoidal signals with different amplitudes and phase shifts
 signal1 = amplitude1 * np.sin(omega * t + theta1_rad)
 signal2 = amplitude2 * np.sin(omega * t + theta2_rad)
-
+main_signal=np.sin(omega*t)
 # Compute phase difference between signals
 complex_signal1 = signal1 + 1j * np.zeros_like(signal1)
 complex_signal2 = signal2 + 1j * np.zeros_like(signal2)
-
-phase_difference = np.angle(complex_signal1 * np.conjugate(complex_signal2)).mean()
-
-print(f"Phase difference: {phase_difference * 180 / np.pi} degrees")
 
 # Create a DataFrame and save to CSV
 data = {
     'Time': t,
     'Signal 1': signal1,
     'Signal 2': signal2,
-    'Phase Difference': [phase_difference] * len(t)
 }
 df = pd.DataFrame(data)
 df.to_csv('vibration_data.csv', index=False)
@@ -78,6 +73,7 @@ df.to_csv('vibration_data.csv', index=False)
 plt.figure(figsize=(10, 6))
 plt.plot(t, signal1, label="Signal 1")
 plt.plot(t, signal2, label="Signal 2")
+plt.plot(t, main_signal, label="Main Signal")
 plt.title("Simulated Acceleration Signals")
 plt.xlabel("Time (s)")
 plt.ylabel("Amplitude")

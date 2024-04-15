@@ -65,12 +65,48 @@ print(f"Total unbalance mass: {mean_Mass:.4f} g")
 print(f"Total angular position (theta): {total_theta_degrees:.2f} degrees")
 print(f"Total radius: {mean_radius:.4f} m")
 
-# Plot the signals
-plt.figure(figsize=(10, 6))
-plt.plot(time, signal1, label="Signal 1")
-plt.plot(time, signal2, label="Signal 2")
-plt.title("Simulated Acceleration Signals")
-plt.xlabel("Time (s)")
-plt.ylabel("Amplitude")
-plt.legend()
+# Create separate polar plots for each signal
+fig = plt.figure(figsize=(10, 10))
+"""
+for idx, signal in enumerate([signal1, signal2], 1):
+       ax = fig.add_subplot(1, 2, idx, projection='polar')
+       ax.set_theta_zero_location("E")
+       ax.set_theta_direction(1)
+           
+           # Calculate the FFT of the signal inside the loop
+       signal_fft = np.fft.fft(signal)
+           
+           # Flatten the FFT signal to ensure it's a 1D array
+       signal_angle = np.unwrap(np.angle(signal_fft.flatten()))
+           
+           # Flatten the original signal
+       flattened_signal = signal.flatten()
+           
+       #ax.plot(signal_angle, flattened_signal, '-', lw=2)
+       ax.axvline(x=phase_difference_degrees, color='orange', ls='-')
+           
+       if idx == 1:
+              ax.set_title("Signal 1")
+       else:
+              ax.set_title("Signal 2")
+
+"""
+ax1 = fig.add_subplot(1, 2, 1, projection='polar')
+ax2 = fig.add_subplot(1, 2, 2, projection='polar')
+
+ax1.set_theta_zero_location("E")
+ax1.set_theta_zero_location("E")
+
+ax1.set_theta_direction(1)
+ax2.set_theta_direction(1)
+
+signal1_angle = np.unwrap(np.angle(signal1_fft.flatten()))
+signal2_angle = np.unwrap(np.angle(signal2_fft.flatten()))
+
+flattened_signal1 = signal1.flatten()
+flattened_signal2 = signal2.flatten()
+
+ax1.axvline(x=phase_difference_degrees, color='orange', ls='-')
+ax2.axvline(x=phase_difference_degrees, color='orange', ls='-')
+
 plt.show()

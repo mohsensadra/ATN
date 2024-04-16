@@ -59,17 +59,23 @@ pahse1=phase_difference(main_signal, signal1, sampling_freq)
 
 # Calculate the total unbalance mass, total angular position (theta), and total radius
 m1 = np.sqrt((2 * np.abs(signal.hilbert(signal1))) / np.sqrt(2 * np.pi * sampling_freq))
+
 m2 = np.sqrt((2 * np.abs(signal.hilbert(signal2))) / np.sqrt(2 * np.pi * sampling_freq))
-#r1 = np.sqrt(np.abs(m1 * np.cos(phase_diff) / 2) / m1)
-#r2 = np.sqrt(np.abs(m2 * np.cos(phase_diff) / 2) / m2)
-#total_radius = np.sqrt((r1 + r2) / 2)
-#mean_radius=np.mean(np.abs(total_radius))
-#total_mass = np.sqrt((m1 * r1 + m2 * r2) / total_radius)
-#mean_Mass = np.mean(np.abs(total_mass ))
-#phase_difference_degrees = np.rad2deg(phase_difference)
-#total_theta_degrees = (180 - phase_difference_degrees) / 2
+m1=np.mean(m1)
+m2=np.mean(m2)
+r1 = np.sqrt(np.abs(m1 * np.cos(phase_diff) / 2) / m1)
+r2 = np.sqrt(np.abs(m2 * np.cos(phase_diff) / 2) / m2)
+r1=np.mean(r1)
+r2=np.mean(r2)
+total_radius = np.sqrt(r1 + r2) / 2
+mean_radius=np.mean(np.abs(total_radius))
+total_mass = np.sqrt((m1 * r1 + m2 * r2) / total_radius)
+mean_Mass = np.mean(np.abs(total_mass ))
+phase_diff_degrees = np.rad2deg(phase_diff)
+total_theta_degrees = (180 - phase_diff_degrees) / 2
 
 print(f"Phase difference: {np.mean(phase_diff):.2f} degrees")
 print(f"Phase 1: {np.mean(pahse1):.2f} degrees")
-#print(f"Total unbalance mass: {mean_Mass:.4f} g")
-#print(f"Total angular position (theta): {total_theta_degrees:.2f} degrees")
+#print(r1)
+print("Total unbalance mass: ",mean_Mass, " g")
+print("Total angular position: ", total_theta_degrees, " degrees")

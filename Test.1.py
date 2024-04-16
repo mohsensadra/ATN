@@ -10,17 +10,16 @@ import time
 rotation_speed=1000 # RPM
 omega=rotation_speed*2*np.pi/60
 time = 1
+sampling_freq = 1000
 sampling_frequency = 1000 # Hz
 time_steps = int(sampling_frequency * time)
 t = np.linspace(0, time, time_steps)
-main_signal=np.cos(omega*t)
-df = pd.read_csv('vibration_data.csv')
+main_signal=np.sin(omega*t)
 
 
-# Extract the data into numpy arrays
-time = df['Time'].to_numpy()
-signal1 = df['Signal 1'].to_numpy()
-signal2 = df['Signal 2'].to_numpy()
+
+
+
 
 def phase_difference(signal1, signal2, sampling_freq):
        # Ensure both signals have the same length by truncating the longer one
@@ -47,19 +46,22 @@ def phase_difference(signal1, signal2, sampling_freq):
        # Convert phase difference from radians to degrees
        phase_difference_degrees = np.rad2deg(phase_difference_radians)
 
-       return phase_difference_degrees
+       return phase_difference_degrees,phase1
 
 
-sampling_freq = 1000
-# Replace with your actual sampling frequency
+# Extract the data into numpy arrays]
+df = pd.read_csv('vibration_data.csv')
+time = df['Time'].to_numpy()
+signal1 = df['Signal 1'].to_numpy()
+signal2 = df['Signal 2'].to_numpy()
+
 # Calculate the phase difference
-phase_diff = phase_difference(signal1, signal2, sampling_freq)
-pahse1=phase_difference(main_signal, signal1, sampling_freq)
-
+phase_diff, phase1 = phase_difference(signal1, signal2, sampling_freq)
+phase1,p1=phase_difference(main_signal, signal1, sampling_freq)
+phase2=-phase1+phase_diff
 
 # Calculate the total unbalance mass, total angular position (theta), and total radius
 m1 = np.sqrt((2 * np.abs(signal.hilbert(signal1))) / np.sqrt(2 * np.pi * sampling_freq))
-
 m2 = np.sqrt((2 * np.abs(signal.hilbert(signal2))) / np.sqrt(2 * np.pi * sampling_freq))
 m1=np.mean(m1)
 m2=np.mean(m2)
@@ -71,11 +73,33 @@ total_radius = np.sqrt(r1 + r2) / 2
 mean_radius=np.mean(np.abs(total_radius))
 total_mass = np.sqrt((m1 * r1 + m2 * r2) / total_radius)
 mean_Mass = np.mean(np.abs(total_mass ))
-phase_diff_degrees = np.rad2deg(phase_diff)
-total_theta_degrees = (180 - phase_diff_degrees) / 2
+total_theta_degrees = phase_diff
+total_theta_degrees =np.mean(total_theta_degrees)
 
+#print Calculation
+print(f"Phase 1: {np.mean(phase1):.2f} degrees")
+print(f"Phase 2: {np.mean(phase2):.2f} degrees")
 print(f"Phase difference: {np.mean(phase_diff):.2f} degrees")
-print(f"Phase 1: {np.mean(pahse1):.2f} degrees")
-#print(r1)
-print("Total unbalance mass: ",mean_Mass, " g")
-print("Total angular position: ", total_theta_degrees, " degrees")
+print(f"Total Removing Mass: {mean_Mass:.2f}  gram")
+print(f"Total Theta: {total_theta_degrees:.2f}")
+
+#Create separate polar plots for each signal
+fig = plt.figure(figsize=(10, 6))
+   
+ax1 = fig.add_subplot(1, 2, 1, projection='polar')
+ax2 = fig.add_subplot(1, 2, 2, projection='polar')
+
+ax1.set_theta_zero_location("N")
+ax2.set_theta_zero_location("N")
+
+ax1.set_title('PHASE.1')
+ax2.set_title('PHASE.2')
+
+ax1.set_theta_direction(1)
+ax2.set_theta_direction(1)
+
+ax1.axvline(np.mean(np.deg2rad(phase1)), color='orange', ls='--')
+ax2.axvline(np.mean(np.deg2rad(phase2)), color='orange', ls='--')
+
+plt.show()
+

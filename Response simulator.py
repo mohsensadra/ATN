@@ -14,17 +14,17 @@ cylinder_mass = 1.014 # kg
 rotation_speed = 1000 # rpm
 
 # Unbalance mass parameters
-m1 = 0.01 #random.uniform(0.0, 0.02) # kg
-m2 = 0.02 #random.uniform(0.0, 0.02) # kg
+m1 = 0.001 #random.uniform(0.0, 0.02) # kg
+m2 = 0.001 #random.uniform(0.0, 0.02) # kg
 r1 = 0.005 #random.uniform(0.0, 0.01) # m
-r2 = 0.007 #random.uniform(0.0, 0.01) # m
-theta1 = 50. #random.uniform(0.0, 360.) # degrees
-theta2 = 120. #random.uniform(0.0, 360.) # degrees
+r2 = 0.005 #random.uniform(0.0, 0.01) # m
+theta1 = 50 #random.uniform(0.0, 360.) # degrees
+theta2 = -100 #random.uniform(0.0, 360.) # degrees
 
 # Convert theta1 and theta2 to radians
 theta1_rad = np.deg2rad(theta1)
 theta2_rad = np.deg2rad(theta2)
-print ('Alpha:',theta1,' Phase difference:',theta2-theta1, ' deg')
+print ('Theta1:',theta1,'Theta2:',theta2,' Phase difference:',theta2-theta1, ' deg')
 # Sensor positions
 sensor1_distance = 0.308 # m
 sensor2_distance = sensor1_distance + 0.19 # m
@@ -78,4 +78,4 @@ plt.title("Simulated Acceleration Signals")
 plt.xlabel("Time (s)")
 plt.ylabel("Amplitude")
 plt.legend()
-plt.show()
+#plt.show()

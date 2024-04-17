@@ -12,6 +12,13 @@ import matplotlib.pyplot as plt
 from scipy import signal
 import schedule
 import time
+import sys
+
+try:
+    color = sys.stdout.shell
+except AttributeError:
+    raise RuntimeError("Use IDLE")
+
 #constant
 rotation_speed=1000 # RPM
 omega=rotation_speed*2*np.pi/60
@@ -21,7 +28,23 @@ time_steps = int(sampling_frequency * time)
 t = np.linspace(0, time, time_steps)
 main_signal=np.sin(omega*t)
 
-def Balancing(mainsignal,t):
+ # Create separate polar plots for each signal
+fig = plt.figure(figsize=(10, 5))
+   
+ax1 = fig.add_subplot(1, 2, 1, projection='polar')
+ax2 = fig.add_subplot(1, 2, 2, projection='polar')
+
+ax1.set_theta_zero_location("N")
+ax2.set_theta_zero_location("N")
+ax1.set_title('PHASE.1, PHASE.2')
+ax2.set_title('CORRECTION')
+
+ax1.set_theta_direction(1)
+ax2.set_theta_direction(1)
+
+
+
+def Balancing(mainsignal,t,fig):
     # Read the CSV file
     df = pd.read_csv('vibration_data.csv')
 
@@ -47,7 +70,8 @@ def Balancing(mainsignal,t):
 
     # Compute the phase difference between signals
     phase_difference = np.angle(cross_spectrum[max_index])
-    Alpha=np.angle(cross_spectrum_main[max_index])
+    theta1=np.angle(cross_spectrum_main[max_index])
+    theta2=phase_difference+theta1
     
     # Calculate the total unbalance mass, total angular position (theta), and total radius
     m1 = np.sqrt((2 * np.abs(signal.hilbert(signal1))) / np.sqrt(2 * np.pi * frequency))
@@ -72,45 +96,57 @@ def Balancing(mainsignal,t):
     print(f"Total angular position (theta): {total_theta_degrees:.2f} degrees")
     #print(f"Total radius: {np.asscalar(total_radius):.4f} m")
     """
+    correction_angle=(np.rad2deg(theta1)+np.rad2deg(theta2))/2
 
     print(f"RMS of Signal 1: {rms1:.4f}")
     print(f"RMS of Signal 2: {rms2:.4f}")
-    print('Alpha',Alpha*180/np.pi, ' degrees')
-    
+    print(f"Theta1: {theta1:.2f} degrees")
+    print(f"Theta2: {theta2:.2f} degrees")
+    color.write(f"Removing Correction Angle: {correction_angle:.1f} degrees","STRING end\n")
     print(f"Phase difference: {phase_difference_degrees:.2f} degrees")
     print(f"Total unbalance mass: {mean_Mass:.4f} g")
     print(f"Total angular position (theta): {total_theta_degrees:.2f} degrees")
     print(f"Total radius: {mean_radius:.4f} m")
-
+    
+    """"
     # Create separate polar plots for each signal
-    fig = plt.figure(figsize=(10, 10))
+    fig = plt.figure(figsize=(10, 5))
    
     ax1 = fig.add_subplot(1, 2, 1, projection='polar')
     ax2 = fig.add_subplot(1, 2, 2, projection='polar')
 
     ax1.set_theta_zero_location("N")
     ax2.set_theta_zero_location("N")
+    ax1.set_title('PHASE.1, PHASE.2')
+    ax2.set_title('CORRECTION')
 
     ax1.set_theta_direction(1)
     ax2.set_theta_direction(1)
-
+    """
     signal1_angle = np.unwrap(np.angle(signal1_fft.flatten()))
     signal2_angle = np.unwrap(np.angle(signal2_fft.flatten()))
 
     flattened_signal1 = signal1.flatten()
     flattened_signal2 = signal2.flatten()
-
-    #x1=np.pi/2-phase_difference_degrees
-    x1=Alpha
-    x2=Alpha+phase_difference_degrees
     
-    ax1.axvline(x1, color='orange', ls='-')
-    ax2.axvline(x2, color='orange', ls='-')
-    #plt.plot(t, main_signal, label="Main Signal")
-    plt.show()
+    #x1=np.pi/2-phase_difference_degrees
+    x1=theta1
+    x2=theta2
+    mean_line=correction_angle
+    ax1.axvline(x1, color='orange', ls='--')
+    ax2.axvline(np.deg2rad(mean_line), color='green', lw=2)
+    ax1.axvline(x2, color='orange', ls='--')
+    #print("1")
+    #plt.show(block=False)
+    #sleep.time(1)
+    #plt.close()
+    for i in range(10):
+        fig.canvas.draw()
+        fig.canvas.flush_events()
+        plt.pause(.5)
     
 while True:
-    Balancing(main_signal,t)
-    time.sleep(.1)
+    Balancing(main_signal,t,fig)
+   
 
 

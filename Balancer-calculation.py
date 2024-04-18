@@ -44,7 +44,7 @@ ax2.set_theta_direction(1)
 
 
 
-def Balancing(mainsignal,t,fig):
+def Balancing(mainsignal,t):
     # Read the CSV file
     df = pd.read_csv('vibration_data.csv')
 
@@ -97,14 +97,15 @@ def Balancing(mainsignal,t,fig):
     #print(f"Total radius: {np.asscalar(total_radius):.4f} m")
     """
     correction_angle=(np.rad2deg(theta1)+np.rad2deg(theta2))/2
-
+    color.write(f"Removing Correction Angle: {correction_angle:.1f} degrees\n","STRING ")
+    color.write(f"Correction Weight: {mean_Mass:.4f} gr \n","STRING ")
+    
     print(f"RMS of Signal 1: {rms1:.4f}")
     print(f"RMS of Signal 2: {rms2:.4f}")
-    print(f"Theta1: {theta1:.2f} degrees")
-    print(f"Theta2: {theta2:.2f} degrees")
-    color.write(f"Removing Correction Angle: {correction_angle:.1f} degrees","STRING end\n")
-    print(f"Phase difference: {phase_difference_degrees:.2f} degrees")
-    print(f"Total unbalance mass: {mean_Mass:.4f} g")
+    print(f"Theta1: {np.rad2deg(theta1):.2f} degrees")
+    print(f"Theta2: {np.rad2deg(theta2):.2f} degrees")
+    #print(f"Phase difference: {phase_difference_degrees:.2f} degrees")
+    #print(f"Total unbalance mass: {mean_Mass:.4f} g")
     print(f"Total angular position (theta): {total_theta_degrees:.2f} degrees")
     print(f"Total radius: {mean_radius:.4f} m")
     
@@ -134,19 +135,28 @@ def Balancing(mainsignal,t,fig):
     x2=theta2
     mean_line=correction_angle
     ax1.axvline(x1, color='orange', ls='--')
-    ax2.axvline(np.deg2rad(mean_line), color='green', lw=2)
-    ax1.axvline(x2, color='orange', ls='--')
+    ax1.axvline(np.deg2rad(mean_line), color='green', lw=2)
+    ax2.axvline(x2, color='orange', ls='--')
     #print("1")
     #plt.show(block=False)
     #sleep.time(1)
     #plt.close()
-    for i in range(10):
-        fig.canvas.draw()
-        fig.canvas.flush_events()
-        plt.pause(.5)
+    #for i in range(10):
+    plt.show(block=False)
+    #while True:
+        #ydata = np.random.rand(10)
+
+        #line.set_ydata(ydata)
+    fig.canvas.draw()
+    fig.canvas.flush_events()
+
+        #plt.pause(0.5)
+    #fig.canvas.draw()
+    #fig.canvas.flush_events()
+    #plt.pause(.5)
     
 while True:
-    Balancing(main_signal,t,fig)
+    Balancing(main_signal,t)
    
 
 

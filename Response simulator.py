@@ -1,15 +1,16 @@
 """
-A Signal Simulator for a Vertical Balancing Machine which it can return
-a CSV file contains a random response for an unbalanced shaft/disk/wheel/cylinder
-with given Diameter, Weight, Width, and RPM and undefined (random) mass (2 masses)
-which positions, magnitudes, radiuses and planes of theirs are random 
+A Signal Simulator for a Vertical Balancing Machine which it can
+returna CSV file contains a random response for an unbalanced
+shaft/disk/wheel/cylinderwith given Diameter, Weight, Width,
+and RPM and undefined (random) mass (2 masses)which positions,
+magnitudes, radiuses and planes of theirs are random 
 """
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import random
 # Cylinder parameters
-cylinder_diameter = 0.147 # m
+cylinder_diameter = 0.141 # m
 cylinder_mass = 1.014 # kg
 rotation_speed = 1000 # rpm
 
@@ -18,8 +19,8 @@ m1 = 0.001 #random.uniform(0.0, 0.02) # kg
 m2 = 0.001 #random.uniform(0.0, 0.02) # kg
 r1 = 0.005 #random.uniform(0.0, 0.01) # m
 r2 = 0.005 #random.uniform(0.0, 0.01) # m
-theta1 = 50 #random.uniform(0.0, 360.) # degrees
-theta2 = -100 #random.uniform(0.0, 360.) # degrees
+theta1 = 45 #random.uniform(0.0, 360.) # degrees
+theta2 = -90 #random.uniform(0.0, 360.) # degrees
 
 # Convert theta1 and theta2 to radians
 theta1_rad = np.deg2rad(theta1)
@@ -78,4 +79,4 @@ plt.title("Simulated Acceleration Signals")
 plt.xlabel("Time (s)")
 plt.ylabel("Amplitude")
 plt.legend()
-#plt.show()
+plt.show()

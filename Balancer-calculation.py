@@ -1,10 +1,11 @@
 """
 The simple calculation using FFT (Fast Fourier Transform) for
 Analyzing 2 signals from a CSV file contains Time, Signal 1,
-Signal 2, Phase Difference come from "Response simulator.py"
-and find the removing mass properties contain Angle (Theta),
-Mass magnitude, and radius for a Balancing Machine which it
-wants to remove some mass to reach out  to dynamic balancing
+Signal 2,  come from "Response simulator.py"
+and it finds  Phase Difference , the removing mass properties
+contain Angle (Theta),Mass magnitude, and radius for
+a Balancing Machine which it wants to remove some mass to
+reach out  to dynamic balancing
 """
 import numpy as np
 import pandas as pd
@@ -36,8 +37,8 @@ ax2 = fig.add_subplot(1, 2, 2, projection='polar')
 
 ax1.set_theta_zero_location("N")
 ax2.set_theta_zero_location("N")
-ax1.set_title('PHASE.1, PHASE.2')
-ax2.set_title('CORRECTION')
+ax1.set_title('Phase.1, Correction')
+ax2.set_title('Phase.2, Correction')
 
 ax1.set_theta_direction(1)
 ax2.set_theta_direction(1)
@@ -137,26 +138,20 @@ def Balancing(mainsignal,t):
     ax1.axvline(x1, color='orange', ls='--')
     ax1.axvline(np.deg2rad(mean_line), color='green', lw=2)
     ax2.axvline(x2, color='orange', ls='--')
+    ax2.axvline(np.deg2rad(mean_line), color='green', lw=2)
     #print("1")
     #plt.show(block=False)
     #sleep.time(1)
     #plt.close()
     #for i in range(10):
     plt.show(block=False)
-    #while True:
-        #ydata = np.random.rand(10)
-
-        #line.set_ydata(ydata)
+    
     fig.canvas.draw()
     fig.canvas.flush_events()
-
-        #plt.pause(0.5)
-    #fig.canvas.draw()
-    #fig.canvas.flush_events()
-    #plt.pause(.5)
+    plt.pause(2)
     
-while True:
-    Balancing(main_signal,t)
+#while True:
+    #Balancing(main_signal,t)
    
 
-
+Balancing(main_signal,t)

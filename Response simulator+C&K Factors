@@ -1,8 +1,8 @@
 """
 A Signal Simulator for a Vertical Balancing Machine which it can
-returna CSV file contains a random response for an unbalanced
-shaft/disk/wheel/cylinderwith given Diameter, Weight, Width, K-Factor,
-C-Factor (Damping) RPM and undefined (random) mass (2 masses)which positions,
+The return CSV file contains a random response for an unbalanced
+shaft/disk/wheel/cylinder with given Diameter, Weight, Width, K-Factor,
+C-Factor (Damping) RPM and undefined (random) mass (2 masses) which positions,
 magnitudes, radiuses and planes of theirs are random 
 """
 import numpy as np

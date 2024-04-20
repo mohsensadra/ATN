@@ -1,0 +1,103 @@
+"""
+A Signal Simulator for a Vertical Balancing Machine which it can
+returna CSV file contains a random response for an unbalanced
+shaft/disk/wheel/cylinderwith given Diameter, Weight, Width, K-Factor,
+C-Factor (Damping) RPM and undefined (random) mass (2 masses)which positions,
+magnitudes, radiuses and planes of theirs are random 
+"""
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+import random
+#-------------------------------------------------------------------------------------------
+# Constants
+# Cylinder parameters
+cylinder_diameter = 0.141 # m
+cylinder_mass = 1.014 # kg
+rotation_speed = 1000 # rpm
+
+# Conversion factors
+rtrps= 2 * np.pi / 60 #rpm_to_rad_per_sec
+
+M = cylinder_mass # mass (kg)
+
+Omega = 1000 * rtrps  # angular velocity (rad/s)
+
+c = 0.5  # damping coefficient (N⋅s/m)
+
+k = 5000 # spring coefficient (N/m)
+
+m1 = 0.0005 #random.uniform(0.0, 0.02) # kg # unbalanced mass 1  
+m2 = 0.0005 #random.uniform(0.0, 0.02) # kg # unbalanced mass 2 
+
+r1 = 0.01 #random.uniform(0.0, 0.01) # m # distance 1 between the rotation axis and the center of mass
+r2 = 0.015 #random.uniform(0.0, 0.01) # m # distance 2 between the rotation axis and the center of mass
+
+theta1 = 45 #random.uniform(0.0, 360.) # degrees
+theta2 = -90 #random.uniform(0.0, 360.) # degrees
+# Convert theta1 and theta2 to radians
+
+print ('Theta1:',theta1,'Theta2:',theta2,' Phase difference:',theta2-theta1, ' deg')
+
+h1 = 0.001 # height 1 difference (m)
+h2 = 0.002 # height 2 difference (m)
+
+L1 = 0.03 # distance from rotation axis to sensor 1 (m)
+L2 = 0.02 # distance from rotation axis to sensor 2 (m)
+
+# Initial conditions
+y0 = [0,0]  #theta0=0 (rad) , omega0=0 (rd/s)
+
+#-------------------------------------------------------------------------------------------
+
+# Define a function for the differential equations
+theta1 = np.deg2rad(theta1)
+theta2 = np.deg2rad(theta2)
+
+def system_eq(t, y, Omega, m1, r1, theta1, h1, m2, r2, theta2, h2, c, k):
+    theta, omega = y
+    m1_term = m1 * Omega**2 * (r1 * np.cos(Omega * t + theta1) - h1 * np.sin(Omega * t + theta1))
+    m2_term = m2 * Omega**2 * (r2 * np.cos(Omega * t + theta2) - h2 * np.sin(Omega * t + theta2))
+    dydt = [omega, -c * omega - k * theta + m1_term + m2_term]
+    return dydt
+
+
+# Function to calculate acceleration signals
+def acceleration(t, Omega, m, r, theta, h, L):
+    acc = -m * Omega**2 * L * (r * np.cos(Omega * t + theta) - h * np.sin(Omega * t + theta))
+    return acc
+
+# Simulation time (s)
+time = .5
+
+sampling_freq = 1000 # Hz not less than 500
+
+t = np.linspace(0, time, sampling_freq) #Time Array
+
+sol = solve_ivp(system_eq, (0, time) , y0, args=(Omega, m1, r1, theta1, h1, m2, r2, theta2, h2, c, k), t_eval=t) #Solving an Initial Value problem
+
+# Plot the acceleration signals
+acc1 = acceleration(t, Omega, m1, r1, theta1, h1, L1)
+acc2 = acceleration(t, Omega, m2, r2, theta2, h2, L2)
+
+# Create a CSV
+data = {
+    'Time': t,
+    'Signal 1': acc1,
+    'Signal 2': acc2,
+}
+df = pd.DataFrame(data)
+df.to_csv('vibration_data.csv', index=False)
+
+# Show Plots
+plt.plot(t, sol.y[0, :], label="Angle (theta)")
+plt.plot(t, sol.y[1, :], label="Angular Velocity (omega)")
+
+plt.figure(figsize=(10, 6))
+plt.plot(t, acc1, label="Signal 1")
+plt.plot(t, acc2, label="Signal 2")
+plt.legend()
+plt.xlabel("Time (s)")
+plt.ylabel("Acceleration (m/s^2)")
+plt.show()

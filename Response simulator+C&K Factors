@@ -14,19 +14,20 @@ import random
 # Constants
 # Cylinder parameters
 cylinder_diameter = 0.141 # m
-cylinder_mass = 1.014 # kg
+part_mass = 1.014 # kg
+Total_mass=20 #kg Part mass+ axle mass
 rotation_speed = 1000 # rpm
 
 # Conversion factors
 rtrps= 2 * np.pi / 60 #rpm_to_rad_per_sec
 
-M = cylinder_mass # mass (kg)
+M = part_mass # mass (kg)
 
 Omega = 1000 * rtrps  # angular velocity (rad/s)
 
-c = 0.5  # damping coefficient (N⋅s/m)
+c = 0.5 # damping coefficient (N⋅s/m)
 
-k = 5000 # spring coefficient (N/m)
+k = .5 # spring coefficient (N/m)
 
 m1 = 0.0005 #random.uniform(0.0, 0.02) # kg # unbalanced mass 1  
 m2 = 0.0005 #random.uniform(0.0, 0.02) # kg # unbalanced mass 2 
@@ -76,7 +77,15 @@ sampling_freq = 1000 # Hz not less than 500
 t = np.linspace(0, time, sampling_freq) #Time Array
 
 sol = solve_ivp(system_eq, (0, time) , y0, args=(Omega, m1, r1, theta1, h1, m2, r2, theta2, h2, c, k), t_eval=t) #Solving an Initial Value problem
+#-----------------------------------------------------
+def Displacement(t,m):
+    y = np.exp((-c-np.sqrt(c**2-4*k*m))*(t/(2*m)))-np.exp((-c+np.sqrt(c**2-4*k*m))*(t/(2*m)))
+    return y
 
+y1 = Displacement(t,m1) #Displacement 1
+y2 = Displacement(t,m2) #Displacement 2
+print(y1)
+#-----------------------------------------------------
 # Plot the acceleration signals
 acc1 = acceleration(t, Omega, m1, r1, theta1, h1, L1)
 acc2 = acceleration(t, Omega, m2, r2, theta2, h2, L2)
@@ -91,13 +100,19 @@ df = pd.DataFrame(data)
 df.to_csv('vibration_data.csv', index=False)
 
 # Show Plots
-plt.plot(t, sol.y[0, :], label="Angle (theta)")
+plt.figure(figsize=(15, 6))
+#plt.plot(t, sol.y[0, :], label="Angle (theta)")
 plt.plot(t, sol.y[1, :], label="Angular Velocity (omega)")
 
-plt.figure(figsize=(10, 6))
-plt.plot(t, acc1, label="Signal 1")
-plt.plot(t, acc2, label="Signal 2")
+#plt.figure(figsize=(15, 6))
+plt.plot(t, acc1, label="Signal 1 (Acc1)")
+plt.plot(t, acc2, label="Signal 2 (Acc2)")
+plt.figure(figsize=(15, 6))
 plt.legend()
 plt.xlabel("Time (s)")
 plt.ylabel("Acceleration (m/s^2)")
+plt.plot(t, y1, label="Displacement 1")
+plt.plot(t, y2, label="Displacement 2")
+
+
 plt.show()

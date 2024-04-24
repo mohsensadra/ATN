@@ -10,6 +10,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 import random
+import math
+import sys
+
+try:
+    color = sys.stdout.shell
+except AttributeError:
+    raise RuntimeError("Use IDLE")
 #-------------------------------------------------------------------------------------------
 # Constants
 # Cylinder parameters
@@ -29,17 +36,19 @@ c = 0.05 # damping coefficient (N⋅s/m)
 
 k = 50 # spring coefficient (N/m)
 
-m1 = 0.001 #random.uniform(0.0, 0.02) # kg # unbalanced mass 1  
-m2 = 0.005 #random.uniform(0.0, 0.02) # kg # unbalanced mass 2 
+m1 = .008 #random.uniform(0.0, 0.02) # kg # unbalanced mass 1  
+m2 = .008 #random.uniform(0.0, 0.02) # kg # unbalanced mass 2 
 
-r1 = 0.01 #random.uniform(0.0, 0.01) # m # distance 1 between the rotation axis and the center of mass
-r2 = 0.01 #random.uniform(0.0, 0.01) # m # distance 2 between the rotation axis and the center of mass
+r1 = 0.0705 #random.uniform(0.0, 0.01) # m # distance 1 between the rotation axis and the center of mass
+r2 = 0.00 #random.uniform(0.0, 0.01) # m # distance 2 between the rotation axis and the center of mass
 
-theta1 = 0 #random.uniform(0.0, 360.) # degrees
+theta1 = 90 #random.uniform(0.0, 360.) # degrees
 theta2 = 120 #random.uniform(0.0, 360.) # degrees
 # Convert theta1 and theta2 to radians
 
-print ('Theta1:',theta1,'Theta2:',theta2,' Phase difference:',theta2-theta1, ' deg')
+print ('Theta1:',theta1,' Theta2:',theta2,' Phase difference:',theta2-theta1, ' deg')
+print ('Mass1:',m1*1000, 'g',' Mass2:',m2*1000,' g')
+print ('Radius1:',r1*1000,' mm',' Radius2:',r2*1000, ' mm')
 
 h1 = 0.001 # height 1 difference (m)
 h2 = 0.002 # height 2 difference (m)
@@ -53,8 +62,17 @@ y0 = [0,0]  #theta0=0 (rad) , omega0=0 (rd/s)
 #-------------------------------------------------------------------------------------------
 
 # Define a function for the differential equations
+def Check_Mass (m,theta):
+    if m>0:
+        theta = np.deg2rad(theta)
+    else:
+        theta=0
+    return theta
+#theta1=  Check_Mass(m1,theta1)
+#theta2=  Check_Mass(m2,theta2)
 theta1 = np.deg2rad(theta1)
 theta2 = np.deg2rad(theta2)
+
 
 def system_eq(t, y, Omega, m1, r1, theta1, h1, m2, r2, theta2, h2, c, k):
     theta, omega = y
@@ -78,14 +96,33 @@ t = np.linspace(0, time, sampling_freq) #Time Array
 
 sol = solve_ivp(system_eq, (0, time) , y0, args=(Omega, m1, r1, theta1, h1, m2, r2, theta2, h2, c, k), t_eval=t) #Solving an Initial Value problem
 #----------------------------------------------------->>>
+
 def Displacement(t,m,theta):
     #y = np.exp((-c-np.sqrt(c**2-4*k*m))*(t/(2*m)))-np.exp((-c+np.sqrt(c**2-4*k*m))*(t/(2*m)))
-    y = -np.cos(t*np.sqrt(k/m-c**2/(4*m**2*k))+theta)*np.exp(-c*t/(2*m))
-    return y
+    if m>0 :
+        y = -np.cos(t*np.sqrt(k/m-c**2/(4*m**2*k))+theta)*np.exp(-c*t/(2*m))
+       # thetaeq=(theta1+theta2)/2
+    else:
+        y=0
+        #thetaeq=theta
+    return y#, thetaeq
+M_equal=(np.abs(np.sqrt((m1*r1*np.sin(theta1))**2+(m2*r2*np.sin(theta2))**2)))/(Omega**2*cylinder_diameter/2)
+theta_equal=math.atan((m1*r1*np.cos(theta1)+m2*r2*np.cos(theta2))/(m1*r1*np.sin(theta1)+m2*r2*np.sin(theta2)))
 
 y1 = Displacement(t,m1,theta1) #Displacement 1
 y2 = Displacement(t,m2,theta2) #Displacement 2
-#print(y1)
+
+eccentricity=(M_equal*cylinder_diameter/2)*1e9
+
+if (eccentricity <8):
+    color.write(f"This Part is Balanced\n","STRING ")
+else:
+    color.write(f"This Part needs Balancing\n","COMMENT ") 
+
+color.write(f"Eccentricity:     {round(eccentricity,5)}  g.cm\n","STRING ")
+color.write(f"@ Angle:          {round(np.rad2deg(theta_equal),5)}  deg\n","STRING ")
+color.write(f"@ Removing Mass:  {round(M_equal*10000000, 5)}  g\n","STRING ")
+
 #-----------------------------------------------------<<<
 # Plot the acceleration signals
 acc1 = acceleration(t, Omega, m1, r1, theta1, h1, L1)
@@ -101,22 +138,24 @@ df = pd.DataFrame(data)
 df.to_csv('vibration_data.csv', index=False)
 
 # Show Plots
-plt.legend()
+
 plt.figure(figsize=(15, 6))
-plt.plot(t, sol.y[0, :], label="Angle (theta)")
+#plt.plot(t, sol.y[0, :], label="Angle (theta)")
+#print (sol.y[1, :])
 plt.plot(t, sol.y[1, :], label="Angular Velocity (omega)")
 plt.ylabel("Acceleration (m/s^2)")
+plt.legend()
 #plt.figure(figsize=(15, 6))
 plt.plot(t, acc1, label="Signal 1 (Acc1)")
 plt.plot(t, acc2, label="Signal 2 (Acc2)")
 
-plt.figure(figsize=(15, 6))
+#plt.figure(figsize=(15, 6))
 
-plt.xlabel("Time (s)")
+#plt.xlabel("Time (s)")
 
-plt.plot(t, y1, label="Displacement 1", ls="-.")
-plt.plot(t, y2, label="Displacement 2", ls="-.")
-plt.plot(t, (y1+y2)/2, lw=2)
+#plt.plot(t, y1, label="Displacement 1", ls="-.")
+#plt.plot(t, y2, label="Displacement 2", ls="-.")
+#plt.plot(t, (y1+y2)/2, lw=2)
 
 
 plt.show()

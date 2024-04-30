@@ -1,0 +1,151 @@
+
+# Jeffcott Equation sample
+import numpy as np
+import matplotlib.pyplot as plt
+
+def generate_signals(M, R, m, r, theta, omega, L, L1, L2):
+       # Generate time array and calculate force signals
+       time = np.linspace(0, 1, 1000)
+       F1 = (m * r * omega ** 2) * np.sin(omega * time + np.deg2rad(theta) - np.deg2rad(L1 / L))
+       F2 = (m * r * omega ** 2) * np.sin(omega * time + np.deg2rad(theta) - np.deg2rad(L2 / L))
+       return time, F1, F2
+
+def two_plane_balancing(a11, a12, a21, a22, V1, V2):
+       # Calculate unbalance in each plane using balancing equations
+       U1 = (V1 * a22 - V2 * a12) / (a11 * a22 - a12 * a21)
+       U2 = (V1 * a12 - V2 * a11) / (a11 * a22 - a12 * a21)
+       return U1, U2
+
+def calculate_unbalancing_parameters(U1, U2, r, omega):
+       # Calculate unbalancing mass and angles for each plane
+       m1 = U1 / (r * omega ** 2)
+       theta1 = np.degrees(np.arctan(a12 / a11))
+       m2 = U2 / (r * omega ** 2)
+       theta2 = np.degrees(np.arctan(a22 / a21))
+       return m1, theta1, m2, theta2
+
+# Constants and example parameters
+M = 1014 # Disk mass (g)
+R = 70.5  # Disk radius (mm)
+m = 1 # Unbalancing mass (g)
+r = 70.5  # Radius of unbalancing mass (mm)
+theta = 120  # Angle of unbalancing mass (deg)
+omega = 2 * np.pi * (1000 / 60)  # Rotational velocity (rpm) converted to rad/s
+L = 100  # Length of rotor (mm)
+L1 = 300  # Distance of sensor 1 from origin (mm)
+L2 = 500  # Distance of sensor 2 from origin (mm)
+
+
+# Change Units
+M/=1000
+R/=1000
+m/=1000
+r/=1000
+L/=1000
+L1/=1000
+L2/=1000
+
+# Example influence coefficients
+a11 = 0.1
+a12 = 0.05
+a21 = 0.08
+a22 = 0.15
+
+V1 = 2 # Example vibration response 1
+V2 = 1.5 # Example vibration response 2
+
+
+# Generate force signals
+time, F1, F2 = generate_signals(M, R, m, r, theta, omega, L, L1, L2)
+
+
+V1 = np.linalg.norm(F1)
+V2 = np.linalg.norm(F2)
+
+# Calculate unbalances
+U1, U2 = two_plane_balancing(a11, a12, a21, a22, V1, V2)
+
+# Calculate unbalancing parameters
+m1, theta1, m2, theta2 = calculate_unbalancing_parameters(U1, U2, r, omega)
+"""
+print("Unbalancing mass in Upper plane:", m1, "g")
+print("Unbalancing mass in Lower plane:", m2, "g")
+print("Angle of unbalancing mass in Upper plane:", theta1, "deg")
+print("Angle of unbalancing mass in Lower plane:", theta2, "deg")
+"""
+# Plot force signals
+plt.figure(figsize=(8, 6))
+plt.plot(time, F1, label="Force Sensor 1")
+plt.plot(time, F2, label="Force Sensor 2")
+plt.xlabel("Time (s)")
+plt.ylabel("Force (N)")  # Replace this with your force units
+plt.title("Force signals for both sensors")
+plt.legend()
+plt.show(block=False)
+
+
+plt.figure(figsize=(8, 6))
+ax1 = plt.subplot(1, 2, 1, polar=True)
+ax1.set_theta_zero_location("N")
+ax1.set_theta_direction(1)
+ax1.plot(theta1, m1, '-o')
+ax1.plot(theta1, 0, '--')
+#ax1.legend()
+plt.gca().set_yticklabels([])
+ax1.set_title("Upperper Plane Unbalance")
+
+ax2 = plt.subplot(1, 2, 2, polar=True)
+ax2.set_theta_zero_location("N")
+ax2.set_theta_direction(1)
+ax2.plot(theta2, m2, 'o')
+ax2.plot(theta2, 0, '--')
+#ax2.legend()
+ax2.set_title("Lower Plane Unbalance")
+plt.gca().set_yticklabels([])
+plt.show(block=False)
+
+# Calculate removing mass and angles for dynamic balance
+m_remove1 = m1
+m_remove2 = m2
+theta_remove1 = theta1 #+ 180
+theta_remove2 = theta2 #+ 180
+
+print("Removing mass in Upper plane:", m_remove1, "g")
+print("Removing mass in Lower plane:", m_remove2, "g")
+print("Removing angle in Upper plane:", theta_remove1, "deg")
+print("Removing angle in Lower plane:", theta_remove2, "deg")
+
+
+if np.abs(U1) > np.abs(U2):
+    plane = "Upper"
+    U_max = U1
+else:
+    plane = "Lower"
+    U_max = U2
+
+# Calculate mass and angle for single mass removal method
+m_remove = U_max
+if plane == "Upper":
+    theta_remove = 180 - np.degrees(np.arctan(a12 / a11))
+else:
+    theta_remove = 180 - np.degrees(np.arctan(a22 / a21))
+
+print(f"Remove {m_remove:.2f} g at {theta_remove:.2f}° in the {plane} plane")
+
+# Polar plot for correction parameter
+plt.figure(figsize=(8, 6))
+ax = plt.subplot(1, 1, 1, polar=True)
+ax.set_theta_zero_location("N")
+ax.set_theta_direction(1)
+ax.plot(theta_remove, m_remove, 'o')
+
+#plt.gca().set_xticklabels([])
+plt.gca().set_yticklabels([])
+
+
+
+#ax.legend()
+ax.set_title(f"Correction Parameter for Dynamic Balance")
+
+plt.show()
+
